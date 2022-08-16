@@ -1,0 +1,434 @@
+= Synchronize data between two Hazelcast clusters with Hazelcast Platform Operator 
+:page-layout: tutorial
+:page-product: operator
+:page-categories: Cloud Native
+:page-enterprise: true
+:page-est-time: 10 mins
+:page-lang: go, java, node, python
+:description: Learn how to sync up data between two Hazelcast clusters.
+
+{description}
+
+== Context
+In this tutorial, you'll do the following:
+
+- Deploy two Hazelcast clusters.
+
+- Create a Hazelcast map configuration.
+
+- Synchronize map data between two Hazelcast clusters.
+
+== Before you Begin
+
+Before starting this tutorial, make sure that you meet the following prerequisites:
+
+* Up and running https://kubernetes.io/[Kubernetes] cluster
+* Kubernetes command-line tool, https://kubernetes.io/docs/tasks/tools/#kubectl[kubectl]
+* Deployed xref:operator:ROOT:index.adoc[Hazelcast Platform Operator]
+
+== Step 1. Start the Hazelcast Cluster
+
+. Create a license secret
++
+Create a secret with your link:http://trialrequest.hazelcast.com/[Hazelcast Enterprise License].
++
+[source, shell]
+----
+kubectl create secret generic hazelcast-license-key --from-literal=license-key=<hz-license-key>
+----
+
+. Create Hazelcast Clusters
++
+Run the following command to create first Hazelcast cluster.
++
+[source, shell]
+----
+cat <<EOF | kubectl apply -f -
+apiVersion: hazelcast.com/v1alpha1
+kind: Hazelcast
+metadata:
+  name: hazelcast-first
+spec:
+  clusterSize: 1
+  repository: 'docker.io/hazelcast/hazelcast-enterprise'
+  version: '5.1-slim'
+  licenseKeySecret: hazelcast-license-key
+EOF
+----
++
+Run the following command to create second Hazelcast cluster.
++
+[source, shell]
+----
+cat <<EOF | kubectl apply -f -
+apiVersion: hazelcast.com/v1alpha1
+kind: Hazelcast
+metadata:
+  name: hazelcast-second
+spec:
+  clusterSize: 1
+  repository: 'docker.io/hazelcast/hazelcast-enterprise'
+  version: '5.1-slim'
+  licenseKeySecret: hazelcast-license-key
+EOF
+----
++
+
+. Check Clusters Status
++
+Run the following commands to see the cluster status
++
+[source, shell]
+----
+$ kubectl get hazelcast
+NAME               STATUS    MEMBERS   EXTERNAL-ADDRESSES
+hazelcast-first    Running   1/1
+hazelcast-second   Running   1/1
+----
+
+. Get the Address of the second Hazelcast Cluster
++
+After verifying that the cluster is `Running` and all the members are ready, run the following command to find the discovery service address.
+
++
+[source, shell]
+----
+$ kubectl get service hazelcast-first hazelcast-second
+NAME               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
+hazelcast-first    ClusterIP   10.96.134.7   <none>        5701/TCP   1m
+hazelcast-second   ClusterIP   10.96.72.2    <none>        5701/TCP   1m
+----
++
+The field `CLUSTER-IP` or `EXTERNAL-IP` is the address of your Hazelcast cluster.
+
+== Step 2. Create WAN Replication Configuration
+
+. Create Map in the first cluster
++
+Run the following command to create the Map
++
+[source, shell]
+----
+cat <<EOF | kubectl apply -f -
+apiVersion: hazelcast.com/v1alpha1
+kind: Map
+metadata:
+  name: example-map
+spec:
+  hazelcastResourceName: hazelcast-first
+EOF
+----
+
+. Create WAN Replication Configuration. We will use first cluster as replication source and set endpoint value to to second cluster address.
++
+Run the following command to configure the replication
++
+[source, shell]
+----
+cat <<EOF | kubectl apply -f -
+apiVersion: hazelcast.com/v1alpha1
+kind: WanReplication
+metadata:
+  name: example-wan-replication
+spec:
+  mapResourceName: example-map
+  targetClusterName: dev
+  endpoints: "<SECOND-CLUSTER-SERVICE-IP>"
+EOF
+----
+
+. Configure the Hazelcast client to connect to the first cluster service address. [[Configure-Client]]
++
+[tabs]
+====
+
+Java::
++
+--
+[source, java]
+----
+ClientConfig config = new ClientConfig();
+config.getNetworkConfig().addAddress("<FIRST-CLUSTER-SERVICE-IP>");
+----
+--
+
+NodeJS::
++
+--
+[source, javascript]
+----
+const { Client } = require('hazelcast-client');
+
+const clientConfig = {
+    network: {
+        clusterMembers: [
+            '<FIRST-CLUSTER-SERVICE-IP>'
+        ]
+    }
+};
+const client = await Client.newHazelcastClient(clientConfig);
+----
+--
+
+Go::
++
+--
+[source, go]
+----
+import (
+	"log"
+
+	"github.com/hazelcast/hazelcast-go-client"
+)
+
+func main() {
+	config := hazelcast.Config{}
+	cc := &config.Cluster
+	cc.Network.SetAddresses("<FIRST-CLUSTER-SERVICE-IP>")
+	ctx := context.TODO()
+	client, err := hazelcast.StartNewClientWithConfig(ctx, config)
+	if err != nil {
+		panic(err)
+	}
+}
+----
+--
+
+Python::
++
+--
+[source, python]
+----
+import logging
+import hazelcast
+
+logging.basicConfig(level=logging.INFO)
+
+client = hazelcast.HazelcastClient(
+    cluster_members=["<FIRST-CLUSTER-SERVICE-IP>"],
+    use_public_ip=True,
+)
+----
+--
+
+====
++
+Now you can start the application to fill the map.
++
+[tabs]
+====
+
+Java::
++
+--
+[source, bash]
+----
+cd clients/java
+mvn package
+java -jar target/*jar-with-dependencies*.jar fill
+----
+--
+
+NodeJS::
++
+--
+[source, bash]
+----
+cd clients/nodejs
+npm install
+npm start fill
+----
+--
+
+Go::
++
+--
+[source, bash]
+----
+cd clients/go
+go run main.go fill
+----
+--
+
+Python::
++
+--
+[source, bash]
+----
+cd clients/python
+pip install -r requirements.txt
+python main.py fill
+----
+--
+
+====
++
+You should see the following output.
++
+[source, shell]
+----
+Successful connection!
+Starting to fill the map with random entries.
+Current map size: 2
+Current map size: 3
+Current map size: 4
+Current map size: 5
+Current map size: 6
+Current map size: 7
+Current map size: 8
+Current map size: 9
+Current map size: 10
+----
+
+== Step 3. Check if map values are present in both clusters
+
+. Verify size of the map
++
+Configure the Hazelcast client to connect to the second cluster address as you did in <<Configure-Client, Configure the Hazelcast Client>>.
++
+[tabs]
+====
+
+Java::
++
+--
+[source, java]
+----
+ClientConfig config = new ClientConfig();
+config.getNetworkConfig().addAddress("<SECOND-CLUSTER-SERVICE-IP>");
+----
+--
+
+NodeJS::
++
+--
+[source, javascript]
+----
+const { Client } = require('hazelcast-client');
+
+const clientConfig = {
+    network: {
+        clusterMembers: [
+            '<SECOND-CLUSTER-SERVICE-IP>'
+        ]
+    }
+};
+const client = await Client.newHazelcastClient(clientConfig);
+----
+--
+
+Go::
++
+--
+[source, go]
+----
+import (
+	"log"
+
+	"github.com/hazelcast/hazelcast-go-client"
+)
+
+func main() {
+	config := hazelcast.Config{}
+	cc := &config.Cluster
+	cc.Network.SetAddresses("<SECOND-CLUSTER-SERVICE-IP>")
+	ctx := context.TODO()
+	client, err := hazelcast.StartNewClientWithConfig(ctx, config)
+	if err != nil {
+		panic(err)
+	}
+}
+----
+--
+
+Python::
++
+--
+[source, python]
+----
+import logging
+import hazelcast
+
+logging.basicConfig(level=logging.INFO)
+
+client = hazelcast.HazelcastClient(
+    cluster_members=["<SECOND-CLUSTER-SERVICE-IP>"],
+    use_public_ip=True,
+)
+----
+--
+====
++
+Now you can start the application to check the map size and see if the replication was successful.
++
+[tabs]
+====
+
+Java::
++
+--
+[source, bash]
+----
+cd clients/java
+mvn package
+java -jar target/*jar-with-dependencies*.jar size
+----
+--
+
+NodeJS::
++
+--
+[source, bash]
+----
+cd clients/nodejs
+npm install
+npm start size
+----
+--
+
+Go::
++
+--
+[source, bash]
+----
+cd clients/go
+go run main.go size
+----
+--
+
+Python::
++
+--
+[source, bash]
+----
+cd clients/python
+pip install -r requirements.txt
+python main.py size
+----
+--
+
+====
++
+You should see the following output.
++
+[source, shell]
+----
+Successful connection!
+Current map size: 12
+----
+
+== Clean Up
+
+To clean up the created resources remove the all Custom Resources and PVCs.
+
+[source, shell]
+----
+kubectl delete secret hazelcast-license-key
+kubectl delete $(kubectl get wanreplications,map,hazelcast -o name)
+kubectl delete pvc -l "app.kubernetes.io/managed-by=hazelcast-platform-operator"
+----
+
+== See Also
+
+- xref:operator:ROOT:wan-replication.adoc[]
+- xref:hazelcast-platform-operator-expose-externally.adoc[]
