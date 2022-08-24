@@ -37,9 +37,8 @@ Create a secret with your link:http://trialrequest.hazelcast.com/[Hazelcast Ente
 kubectl create secret generic hazelcast-license-key --from-literal=license-key=<hz-license-key>
 ----
 
-. Create Hazelcast Clusters
-+
-Run the following command to create first Hazelcast cluster.
+. Create the Hazelcast clusters.
+.. Run the following command to create the first cluster.
 +
 [source, shell]
 ----
@@ -55,8 +54,8 @@ spec:
   licenseKeySecret: hazelcast-license-key
 EOF
 ----
-+
-Run the following command to create second Hazelcast cluster.
+
+.. Run the following command to create the second cluster.
 +
 [source, shell]
 ----
@@ -74,26 +73,30 @@ EOF
 ----
 +
 
-. Check Clusters Status
-+
-Run the following commands to see the cluster status
+. Check the status of the cluster to make sure that it's running.
 +
 [source, shell]
 ----
-$ kubectl get hazelcast
+kubectl get hazelcast
+----
++
+[source,shell]
+----
 NAME               STATUS    MEMBERS   EXTERNAL-ADDRESSES
 hazelcast-first    Running   1/1
 hazelcast-second   Running   1/1
 ----
 
-. Get the Address of the second Hazelcast Cluster
-+
-After verifying that the cluster is `Running` and all the members are ready, run the following command to find the discovery service address.
+. Find the addresses of the clusters.
 
 +
 [source, shell]
 ----
-$ kubectl get service hazelcast-first hazelcast-second
+kubectl get service hazelcast-first hazelcast-second
+----
++
+[source,shell]
+----
 NAME               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 hazelcast-first    ClusterIP   10.96.134.7   <none>        5701/TCP   1m
 hazelcast-second   ClusterIP   10.96.72.2    <none>        5701/TCP   1m
@@ -103,9 +106,7 @@ The field `CLUSTER-IP` or `EXTERNAL-IP` is the address of your Hazelcast cluster
 
 == Step 2. Create WAN Replication Configuration
 
-. Create Map in the first cluster
-+
-Run the following command to create the Map
+. Create a map in the first cluster.
 +
 [source, shell]
 ----
@@ -119,7 +120,7 @@ spec:
 EOF
 ----
 
-. Create WAN Replication Configuration. We will use first cluster as replication source and set endpoint value to to second cluster address.
+. Create a WAN Replication Configuration. Use the second cluster as the target cluster to receive the WAN Replication events.
 +
 Run the following command to configure the replication
 +
@@ -137,7 +138,7 @@ spec:
 EOF
 ----
 
-. Configure the Hazelcast client to connect to the first cluster service address. [[Configure-Client]]
+. [[configure-client]]Configure the Hazelcast client to connect to the first cluster, using its address.
 +
 [tabs]
 ====
@@ -280,11 +281,10 @@ Current map size: 9
 Current map size: 10
 ----
 
-== Step 3. Check if map values are present in both clusters
+== Step 3. Verify that the Map Entries were Replicated
 
-. Verify size of the map
-+
-Configure the Hazelcast client to connect to the second cluster address as you did in <<Configure-Client, Configure the Hazelcast Client>>.
+In this step, you verify the size of the map on the second cluster to make sure that it received all the WAN Replication events.
+. Configure the Hazelcast client to connect to the second cluster as you did in <<configure-client, Configure the Hazelcast Client>>.
 +
 [tabs]
 ====
@@ -358,8 +358,7 @@ client = hazelcast.HazelcastClient(
 ----
 --
 ====
-+
-Now you can start the application to check the map size and see if the replication was successful.
+. Start the application to check the map size and see if the WAN Replication was successful.
 +
 [tabs]
 ====
@@ -408,9 +407,8 @@ python main.py size
 --
 
 ====
-+
-You should see the following output.
-+
+
+You should see the following output:
 [source, shell]
 ----
 Successful connection!
@@ -419,7 +417,7 @@ Current map size: 12
 
 == Clean Up
 
-To clean up the created resources remove the all Custom Resources and PVCs.
+To remove all Custom Resources and PVCs, do the following:
 
 [source, shell]
 ----
