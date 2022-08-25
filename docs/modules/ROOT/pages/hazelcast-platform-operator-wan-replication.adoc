@@ -51,9 +51,8 @@ spec:
   clusterSize: 1
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
-    type: Smart
+    type: Unisocket
     discoveryServiceType: LoadBalancer
-    memberAccess: NodePortExternalIP
 EOF
 ----
 
@@ -70,9 +69,8 @@ spec:
   clusterSize: 1
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
-    type: Smart
+    type: Unisocket
     discoveryServiceType: LoadBalancer
-    memberAccess: NodePortExternalIP
 EOF
 ----
 +
