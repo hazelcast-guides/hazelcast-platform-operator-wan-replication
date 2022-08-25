@@ -287,7 +287,8 @@ Current map size: 10
 
 == Step 3. Verify that the Map Entries were Replicated
 
-In this step, you verify the size of the map on the second cluster to make sure that it received all the WAN Replication events.
+In this step, you verify the size of the map on the second cluster to make sure that it received all the WAN Replication events. 
+
 . Configure the Hazelcast client to connect to the second cluster as you did in <<configure-client, Configure the Hazelcast Client>>.
 +
 [tabs]
@@ -411,8 +412,9 @@ python main.py size
 --
 
 ====
-
++
 You should see the following output:
++
 [source, shell]
 ----
 Successful connection!
