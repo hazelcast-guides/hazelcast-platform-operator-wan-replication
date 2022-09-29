@@ -12,13 +12,14 @@ const clientConfig = {
 
 (async () => {
     try {
-        if (process.argv.length === 2) {
-            console.error('You should pass an argument to run: fill or size');
+        if (process.argv.length !== 4) {
+            console.error('You should pass two argument. The First one is `fill` or `size`. The second one is map name.');
         } else if (!(process.argv[2] === 'fill' || process.argv[2] === 'size')) {
             console.error('Wrong argument, you should pass: fill or size');
         } else {
             const client = await Client.newHazelcastClient(clientConfig);
-            const map = await client.getMap('persistent-map');
+            const mapName = process.argv[3]
+            const map = await client.getMap(mapName);
             await map.put('key', 'value');
             const res = await map.get('key');
             if (res !== 'value') {
@@ -26,7 +27,7 @@ const clientConfig = {
             }
             console.log('Successful connection!');
             if (process.argv[2] === 'fill'){
-                console.log('Starting to fill the map with random entries.');
+                console.log(`Starting to fill the map (${mapName}) with random entries.`);
                 while (true) {
                     const randomKey = Math.floor(Math.random() * 100000);
                     await map.put('key' + randomKey, 'value' + randomKey);
@@ -35,7 +36,7 @@ const clientConfig = {
                 }
             } else {
                 const size = await map.size();
-                console.log(`Current map size: ${size}`);
+                console.log(`The map (${mapName}) size: ${size}`);
             }
         }
     } catch (err) {

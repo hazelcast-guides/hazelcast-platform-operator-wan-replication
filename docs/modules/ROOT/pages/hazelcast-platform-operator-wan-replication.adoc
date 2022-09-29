@@ -14,7 +14,7 @@ In this tutorial, you'll do the following:
 
 - Deploy two Hazelcast clusters.
 
-- Create a Hazelcast map configuration.
+- Create two Hazelcast map configuration in one of the cluster.
 
 - Synchronize map data between two Hazelcast clusters.
 
@@ -49,6 +49,8 @@ metadata:
   name: hazelcast-first
 spec:
   clusterSize: 1
+  repository: 'docker.io/hazelcast/hazelcast-enterprise'
+  version: '5.1.3'
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
     type: Unisocket
@@ -67,6 +69,8 @@ metadata:
   name: hazelcast-second
 spec:
   clusterSize: 1
+  repository: 'docker.io/hazelcast/hazelcast-enterprise'
+  version: '5.1.3'
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
     type: Unisocket
@@ -75,7 +79,7 @@ EOF
 ----
 +
 
-. Check the status of the cluster to make sure that it's running.
+. Check the status of the clusters to make sure that it's running.
 +
 [source, shell]
 ----
@@ -108,7 +112,7 @@ The field `EXTERNAL-IP` is the address of your Hazelcast cluster.
 
 == Step 2. Create WAN Replication Configuration
 
-. Create a map in the first cluster.
+. Create two map in the first cluster.
 +
 [source, shell]
 ----
@@ -116,15 +120,30 @@ cat <<EOF | kubectl apply -f -
 apiVersion: hazelcast.com/v1alpha1
 kind: Map
 metadata:
-  name: example-map
+  name: example-map-1
+spec:
+  hazelcastResourceName: hazelcast-first
+---
+apiVersion: hazelcast.com/v1alpha1
+kind: Map
+metadata:
+  name: example-map-2
 spec:
   hazelcastResourceName: hazelcast-first
 EOF
 ----
 
-. Create a WAN Replication Configuration. Use the second cluster as the target cluster to receive the WAN Replication events.
+. Create a WAN Replication Configuration.
+
++
+- Use the first cluster as the source cluster by giving the cluster name as a resource to WAN Replication configuration.
+Giving the cluster name as a resource starts the WAN Replication for both of the maps created earlier.
++
+- Use the second cluster as the target cluster to receive the WAN Replication events.
+
 +
 Run the following command to configure the replication
+
 +
 [source, shell]
 ----
@@ -134,7 +153,9 @@ kind: WanReplication
 metadata:
   name: example-wan-replication
 spec:
-  mapResourceName: example-map
+  resources:
+    - name: hazelcast-first
+      kind: Hazelcast
   targetClusterName: dev
   endpoints: "<SECOND-CLUSTER-EXTERNAL-IP>"
 EOF
@@ -215,8 +236,10 @@ client = hazelcast.HazelcastClient(
 --
 
 ====
+. Now start the application for each map with their name as a argument to fill the maps.
 +
-Now you can start the application to fill the map.
+Map Names -> example-map-1, example-map-2
+
 +
 [tabs]
 ====
@@ -228,7 +251,7 @@ Java::
 ----
 cd clients/java
 mvn package
-java -jar target/*jar-with-dependencies*.jar fill
+java -jar target/*jar-with-dependencies*.jar fill <MAP-NAME>
 ----
 --
 
@@ -239,7 +262,7 @@ NodeJS::
 ----
 cd clients/nodejs
 npm install
-npm start fill
+npm start fill <MAP-NAME>
 ----
 --
 
@@ -249,7 +272,7 @@ Go::
 [source, bash]
 ----
 cd clients/go
-go run main.go fill
+go run main.go fill <MAP-NAME>
 ----
 --
 
@@ -260,7 +283,7 @@ Python::
 ----
 cd clients/python
 pip install -r requirements.txt
-python main.py fill
+python main.py fill <MAP-NAME>
 ----
 --
 
@@ -271,7 +294,7 @@ You should see the following output.
 [source, shell]
 ----
 Successful connection!
-Starting to fill the map with random entries.
+Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
@@ -283,9 +306,9 @@ Current map size: 9
 Current map size: 10
 ----
 
-== Step 3. Verify that the Map Entries were Replicated
+== Step 3. Verify that the Maps' Entries were Replicated
 
-In this step, you verify the size of the map on the second cluster to make sure that it received all the WAN Replication events. 
+In this step, you verify the sizes of the maps on the second cluster to make sure that they received all the WAN Replication events.
 
 . Configure the Hazelcast client to connect to the second cluster as you did in <<configure-client, Configure the Hazelcast Client>>.
 +
@@ -361,7 +384,10 @@ client = hazelcast.HazelcastClient(
 ----
 --
 ====
-. Start the application to check the map size and see if the WAN Replication was successful.
+. Start the application for each map with their name as a argument to check the map size and see if the WAN Replication was successful.
++
+Map Names -> example-map-1, example-map-2
+
 +
 [tabs]
 ====
@@ -373,7 +399,7 @@ Java::
 ----
 cd clients/java
 mvn package
-java -jar target/*jar-with-dependencies*.jar size
+java -jar target/*jar-with-dependencies*.jar size <MAP-NAME>
 ----
 --
 
@@ -384,7 +410,7 @@ NodeJS::
 ----
 cd clients/nodejs
 npm install
-npm start size
+npm start size <MAP-NAME>
 ----
 --
 
@@ -394,7 +420,7 @@ Go::
 [source, bash]
 ----
 cd clients/go
-go run main.go size
+go run main.go size <MAP-NAME>
 ----
 --
 
@@ -405,7 +431,7 @@ Python::
 ----
 cd clients/python
 pip install -r requirements.txt
-python main.py size
+python main.py size <MAP-NAME>
 ----
 --
 
@@ -416,7 +442,7 @@ You should see the following output:
 [source, shell]
 ----
 Successful connection!
-Current map size: 12
+Current map (<MAP-NAME>) size: 12
 ----
 
 == Clean Up
