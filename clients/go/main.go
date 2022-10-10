@@ -10,12 +10,12 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("You should pass an argument to run: fill or size")
+	if len(os.Args) != 3 {
+		fmt.Println("You need to pass two arguments. The first argument must be `fill` or `size`. The second argument must be `mapName`.")
 		return
 	}
-	if !(os.Args[1] == "fill" || os.Args[1] == "size") {
-		fmt.Println("Wrong argument, you should pass: fill or size")
+	if os.Args[1] != "fill" && os.Args[1] != "size" {
+		fmt.Println("Wrong argument, pass `fill` or `size` instead.")
 		return
 	}
 
@@ -28,12 +28,14 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("Successful connection!")
-	m, err := client.GetMap(ctx, "persistent-map")
+
+	mapName := os.Args[2]
+	m, err := client.GetMap(ctx, mapName)
 	if err != nil {
 		panic(err)
 	}
 	if os.Args[1] == "fill" {
-		fmt.Println("Starting to fill the map with random entries.")
+		fmt.Printf("Starting to fill the map (%s) with random entries.\n", mapName)
 		for {
 			num := rand.Intn(100_000)
 			key := fmt.Sprintf("key-%d", num)
@@ -56,6 +58,6 @@ func main() {
 		fmt.Println("ERR:", err.Error())
 		return
 	}
-	fmt.Println("Current map size:", mapSize)
+	fmt.Printf("The map (%s) size: %v", mapName, mapSize)
 
 }
