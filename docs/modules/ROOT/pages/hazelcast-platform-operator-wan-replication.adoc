@@ -14,9 +14,9 @@ In this tutorial, you'll do the following:
 
 - Deploy two Hazelcast clusters.
 
-- Create two Hazelcast map configuration in one of the cluster.
+- Create two Hazelcast map configurations on one of the clusters.
 
-- Synchronize map data between two Hazelcast clusters.
+- Synchronize map data between the two Hazelcast clusters.
 
 == Before you Begin
 
@@ -79,7 +79,7 @@ EOF
 ----
 +
 
-. Check the status of the clusters to make sure that it's running.
+. Check the status of the clusters to make sure that both clusters are running.
 +
 [source, shell]
 ----
@@ -110,9 +110,12 @@ hazelcast-second   LoadBalancer   10.96.34.62    172.18.0.207   5701:32691/TCP  
 +
 The field `EXTERNAL-IP` is the address of your Hazelcast cluster.
 
-== Step 2. Create WAN Replication Configuration
+== Step 2. Create a WAN Replication Configuration
 
-. Create two map in the first cluster.
+. Create two maps on the first cluster. In this example, the following maps are created:
+
+- `example-map-1`
+- `example-map-2`.
 +
 [source, shell]
 ----
@@ -133,16 +136,16 @@ spec:
 EOF
 ----
 
-. Create a WAN Replication Configuration.
+. Create the configuration for WAN replication:
 
 +
-- Use the first cluster as the source cluster by giving the cluster name as a resource to WAN Replication configuration.
-Giving the cluster name as a resource starts the WAN Replication for both of the maps created earlier.
+- Use the first cluster as the source cluster by adding its name as a resource in the WAN Replication configuration.
+Adding the cluster name as a resource starts WAN replication for both the maps that you created earlier.
 +
-- Use the second cluster as the target cluster to receive the WAN Replication events.
+- Add the second cluster as the target cluster to receive the WAN Replication events.
 
 +
-Run the following command to configure the replication
+Run the following command to apply the configuration.
 
 +
 [source, shell]
@@ -236,9 +239,8 @@ client = hazelcast.HazelcastClient(
 --
 
 ====
-. Now start the application for each map with their name as a argument to fill the maps.
+. Now start the application for each map, using the map name as an argument to fill each map with random entries. If you're reusing the sample code from this tutorial, use the map names `example-map-1` and `example-map-2`.
 +
-Map Names -> example-map-1, example-map-2
 
 +
 [tabs]
@@ -306,11 +308,11 @@ Current map size: 9
 Current map size: 10
 ----
 
-== Step 3. Verify that the Maps' Entries were Replicated
+== Step 3. Verify the Replication of Map Entries
 
-In this step, you verify the sizes of the maps on the second cluster to make sure that they received all the WAN Replication events.
+In this step, you'll check the sizes of the maps on the second, target cluster to make sure that WAN replication events have been received.
 
-. Configure the Hazelcast client to connect to the second cluster as you did in <<configure-client, Configure the Hazelcast Client>>.
+. Configure the Hazelcast client to connect to the second cluster, as you did in <<configure-client, Configure the Hazelcast Client>>.
 +
 [tabs]
 ====
@@ -384,9 +386,8 @@ client = hazelcast.HazelcastClient(
 ----
 --
 ====
-. Start the application for each map with their name as a argument to check the map size and see if the WAN Replication was successful.
+. Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. If you're reusing the sample code from this tutorial, use the map names `example-map-1` and `example-map-2`.
 +
-Map Names -> example-map-1, example-map-2
 
 +
 [tabs]

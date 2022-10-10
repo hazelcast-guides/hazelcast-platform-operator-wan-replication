@@ -7,7 +7,7 @@ import hazelcast
 logging.basicConfig(level=logging.INFO)
 
 if len(sys.argv) != 3:
-    print("You should pass two argument. The First one is `fill` or `size`. The second one is map name.")
+    print("You need to pass two arguments. The first argument must be `fill` or `size`. The second argument must be `mapName`.")
 elif not (sys.argv[1] == "fill" or sys.argv[1] == "size"):
     print("Wrong argument, you should pass: fill or size")
 else:

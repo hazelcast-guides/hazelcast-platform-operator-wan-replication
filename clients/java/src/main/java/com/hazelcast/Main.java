@@ -10,7 +10,7 @@ import java.util.Random;
 public class Main {
     public static void main(String[] args) throws Exception {
         if(args.length != 2) {
-            System.out.println("You should pass two argument. The First one is `fill` or `size`. The second one is map name.");
+            System.out.println("You need to pass two arguments. The first argument must be `fill` or `size`. The second argument must be `mapName`.");
         } else if (!((args[0].equals("fill") || args[0].equals("size")))) {
             System.out.println("Wrong argument, you should pass: fill or size");
         } else{

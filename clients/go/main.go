@@ -11,11 +11,11 @@ import (
 
 func main() {
 	if len(os.Args) != 3 {
-		fmt.Println("You should pass two argument. The First one is `fill` or `size`. The second one is map name.")
+		fmt.Println("You need to pass two arguments. The first argument must be `fill` or `size`. The second argument must be `mapName`.")
 		return
 	}
 	if os.Args[1] != "fill" && os.Args[1] != "size" {
-		fmt.Println("Wrong argument, you should pass: fill or size")
+		fmt.Println("Wrong argument, pass `fill` or `size` instead.")
 		return
 	}
 

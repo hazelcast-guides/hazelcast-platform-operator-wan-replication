@@ -13,7 +13,7 @@ const clientConfig = {
 (async () => {
     try {
         if (process.argv.length !== 4) {
-            console.error('You should pass two argument. The First one is `fill` or `size`. The second one is map name.');
+            console.error('You need to pass two arguments. The first argument must be `fill` or `size`. The second argument must be `mapName`.');
         } else if (!(process.argv[2] === 'fill' || process.argv[2] === 'size')) {
             console.error('Wrong argument, you should pass: fill or size');
         } else {
