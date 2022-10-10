@@ -20,11 +20,11 @@ In this tutorial, you'll do the following:
 
 == Before you Begin
 
-Before starting this tutorial, make sure that you meet the following prerequisites:
+Before starting this tutorial, make sure that you have the following:
 
-* Up and running https://kubernetes.io/[Kubernetes] cluster
-* Kubernetes command-line tool, https://kubernetes.io/docs/tasks/tools/#kubectl[kubectl]
-* Deployed xref:operator:ROOT:index.adoc[Hazelcast Platform Operator]
+* A running https://kubernetes.io/[Kubernetes] cluster
+* The Kubernetes command-line tool, https://kubernetes.io/docs/tasks/tools/#kubectl[kubectl]
+* A deployed xref:operator:ROOT:index.adoc[Hazelcast Platform Operator]
 
 == Step 1. Start the Hazelcast Cluster
 
@@ -448,7 +448,7 @@ Current map (<MAP-NAME>) size: 12
 
 == Clean Up
 
-To remove all Custom Resources and PVCs, do the following:
+To remove all custom resources and PVCs, run the following commands:
 
 [source, shell]
 ----
