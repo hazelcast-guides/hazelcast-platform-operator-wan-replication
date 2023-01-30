@@ -46,9 +46,6 @@ kind: Hazelcast
 metadata:
   name: hazelcast-first
 spec:
-  clusterSize: 1
-  repository: 'docker.io/hazelcast/hazelcast-enterprise'
-  version: '5.1.3'
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
     type: Unisocket
@@ -66,9 +63,6 @@ kind: Hazelcast
 metadata:
   name: hazelcast-second
 spec:
-  clusterSize: 1
-  repository: 'docker.io/hazelcast/hazelcast-enterprise'
-  version: '5.1.3'
   licenseKeySecret: hazelcast-license-key
   exposeExternally:
     type: Unisocket
@@ -87,8 +81,8 @@ kubectl get hazelcast
 [source,shell]
 ----
 NAME               STATUS    MEMBERS   EXTERNAL-ADDRESSES
-hazelcast-first    Running   1/1       172.18.0.222:5701
-hazelcast-second   Running   1/1       172.18.0.207:5701
+hazelcast-first    Running   3/3       172.18.0.222:5701
+hazelcast-second   Running   3/3       172.18.0.207:5701
 ----
 
 . Find the addresses of the clusters.
@@ -112,8 +106,8 @@ The field `EXTERNAL-IP` is the address of your Hazelcast cluster.
 
 . Create two maps on the first cluster. In this example, the following maps are created:
 
-- `example-map-1`
-- `example-map-2`.
+- `map-1`
+- `map-2`.
 +
 [source, shell]
 ----
@@ -121,14 +115,14 @@ cat <<EOF | kubectl apply -f -
 apiVersion: hazelcast.com/v1alpha1
 kind: Map
 metadata:
-  name: example-map-1
+  name: map-1
 spec:
   hazelcastResourceName: hazelcast-first
 ---
 apiVersion: hazelcast.com/v1alpha1
 kind: Map
 metadata:
-  name: example-map-2
+  name: map-2
 spec:
   hazelcastResourceName: hazelcast-first
 EOF
@@ -152,7 +146,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: hazelcast.com/v1alpha1
 kind: WanReplication
 metadata:
-  name: example-wan-replication
+  name: wan-replication
 spec:
   resources:
     - name: hazelcast-first
@@ -237,7 +231,7 @@ client = hazelcast.HazelcastClient(
 --
 
 ====
-. Now start the application for each map, using the map name as an argument to fill each map with random entries. If you're reusing the sample code from this tutorial, use the map names `example-map-1` and `example-map-2`.
+. Now start the application for each map, using the map name as an argument to fill each map with random entries. If you're reusing the sample code from this tutorial, use the map names `map-1` and `map-2`.
 +
 
 +
@@ -384,7 +378,7 @@ client = hazelcast.HazelcastClient(
 ----
 --
 ====
-. Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. If you're reusing the sample code from this tutorial, use the map names `example-map-1` and `example-map-2`.
+. Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. If you're reusing the sample code from this tutorial, use the map names `map-1` and `map-2`.
 +
 
 +
@@ -446,13 +440,12 @@ Current map (<MAP-NAME>) size: 12
 
 == Clean Up
 
-To remove all custom resources and PVCs, run the following commands:
+To remove all custom resources, run the following commands:
 
 [source, shell]
 ----
 kubectl delete secret hazelcast-license-key
 kubectl delete $(kubectl get wanreplications,map,hazelcast -o name)
-kubectl delete pvc -l "app.kubernetes.io/managed-by=hazelcast-platform-operator"
 ----
 
 == See Also
