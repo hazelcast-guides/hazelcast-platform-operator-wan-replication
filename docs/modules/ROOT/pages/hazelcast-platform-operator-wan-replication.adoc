@@ -81,8 +81,8 @@ kubectl get hazelcast
 [source,shell]
 ----
 NAME               STATUS    MEMBERS   EXTERNAL-ADDRESSES
-hazelcast-first    Running   3/3       172.18.0.222:5701
-hazelcast-second   Running   3/3       172.18.0.207:5701
+hazelcast-first    Running   3/3       34.28.19.176:5701,34.28.19.176:5702,34.28.19.176:8081,34.28.19.176:5710
+hazelcast-second   Running   3/3       35.224.41.200:5701,35.224.41.200:5702,35.224.41.200:8081,35.224.41.200:5710
 ----
 
 . Find the addresses of the clusters.
@@ -96,8 +96,8 @@ kubectl get service hazelcast-first hazelcast-second
 [source,shell]
 ----
 NAME               TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)          AGE
-hazelcast-first    LoadBalancer   10.96.229.87   172.18.0.222   5701:32092/TCP   1m
-hazelcast-second   LoadBalancer   10.96.34.62    172.18.0.207   5701:32691/TCP   1m
+hazelcast-first    LoadBalancer   10.96.229.87   172.18.0.222   5701:30282/TCP,5702:31120/TCP,8081:30985/TCP,5710:30009/TCP   1m
+hazelcast-second   LoadBalancer   10.96.34.62    172.18.0.207   5701:31233/TCP,5702:31065/TCP,8081:30897/TCP,5710:31353/TCP   1m
 ----
 +
 The field `EXTERNAL-IP` is the address of your Hazelcast cluster.
