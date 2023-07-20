@@ -162,7 +162,7 @@ In this step, you'll fill the maps on the first, source cluster.
 
 === Connect the cluster using CLC (Option 1)
 
-Before using CLC, it should be installed in your system. Check the installation instructions for CLC: xref:clc:install-clc.adoc[]
+Before using CLC, it should be installed in your system. Check the installation instructions for CLC: xref:clc:ROOT:install-clc.adoc[]
 
 . Run the following command for adding the first cluster config to the CLC.
 +
