@@ -290,7 +290,7 @@ You should see the following output.
 [source, shell]
 ----
 Successful connection!
-Starting to fill the map with random entries.
+Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
@@ -316,7 +316,7 @@ You should see the following output.
 [source, shell]
 ----
 Successful connection!
-Starting to fill the map with random entries.
+Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
@@ -341,7 +341,7 @@ You should see the following output.
 [source, shell]
 ----
 Successful connection!
-Starting to fill the map with random entries.
+Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
@@ -367,7 +367,7 @@ You should see the following output.
 [source, shell]
 ----
 Successful connection!
-Starting to fill the map with random entries.
+Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
