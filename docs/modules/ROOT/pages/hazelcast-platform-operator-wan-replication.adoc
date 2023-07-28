@@ -135,10 +135,8 @@ EOF
 Adding the cluster name as a resource starts WAN replication for both the maps that you created earlier.
 +
 - Add the second cluster as the target cluster to receive the WAN Replication events.
-
 +
 Run the following command to apply the configuration.
-
 +
 [source, shell]
 ----
@@ -156,10 +154,27 @@ spec:
 EOF
 ----
 
-. [[configure-client]]Configure the Hazelcast client to connect to the first cluster, using its address.
+== Step 3. Put Entries to the Maps on the First Cluster
+
+In this step, you'll fill the maps on the first, source cluster.
+
+. Configure the Hazelcast client to connect to the first cluster, using its address. [[configure-client]]
 +
 [tabs]
 ====
+
+CLC::
++
+--
+NOTE: Before using CLC, it should be installed in your system. Check the installation instructions for CLC: xref:clc:ROOT:install-clc.adoc[].
+
+Run the following command for adding the first cluster config to the CLC.
+
+[source, bash]
+----
+clc config add hz-1 cluster.name=dev cluster.address=<FIRST-CLUSTER-EXTERNAL-IP>
+----
+--
 
 Java::
 +
@@ -231,60 +246,47 @@ client = hazelcast.HazelcastClient(
 --
 
 ====
-. Now start the application for each map, using the map name as an argument to fill each map with random entries. If you're reusing the sample code from this tutorial, use the map names `map-1` and `map-2`.
 +
-
+. Start to fill the maps.
 +
 [tabs]
 ====
 
+CLC::
++
+--
+Run the following command for each map, using the map name as an argument to fill each map with entries. Use the map names `map-1` and `map-2`.
+
+[source, bash]
+----
+for i in {1..10};
+do
+   clc -c hz-1 map set --name <MAP-NAME> key-$i value-$i;
+done
+----
+
+Run the following command for each map to check if the sizes are expected.
+
+[source, bash]
+----
+clc -c hz-1 map size --name <MAP-NAME>
+----
+--
+
 Java::
 +
 --
+Start the application for each map, using the map name as an argument to fill each map with random entries. Use the map names `map-1` and `map-2`.
+
 [source, bash]
 ----
 cd clients/java
 mvn package
 java -jar target/*jar-with-dependencies*.jar fill <MAP-NAME>
 ----
---
 
-NodeJS::
-+
---
-[source, bash]
-----
-cd clients/nodejs
-npm install
-npm start fill <MAP-NAME>
-----
---
-
-Go::
-+
---
-[source, bash]
-----
-cd clients/go
-go run main.go fill <MAP-NAME>
-----
---
-
-Python::
-+
---
-[source, bash]
-----
-cd clients/python
-pip install -r requirements.txt
-python main.py fill <MAP-NAME>
-----
---
-
-====
-+
 You should see the following output.
-+
+
 [source, shell]
 ----
 Successful connection!
@@ -292,13 +294,89 @@ Starting to fill the map (<MAP-NAME>) with random entries.
 Current map size: 2
 Current map size: 3
 Current map size: 4
-Current map size: 5
-Current map size: 6
-Current map size: 7
-Current map size: 8
-Current map size: 9
-Current map size: 10
+....
+....
 ----
+--
+
+NodeJS::
++
+--
+Start the application for each map, using the map name as an argument to fill each map with random entries. Use the map names `map-1` and `map-2`.
+
+[source, bash]
+----
+cd clients/nodejs
+npm install
+npm start fill <MAP-NAME>
+----
+
+You should see the following output.
+
+[source, shell]
+----
+Successful connection!
+Starting to fill the map (<MAP-NAME>) with random entries.
+Current map size: 2
+Current map size: 3
+Current map size: 4
+....
+....
+----
+--
+
+Go::
++
+--
+Start the application for each map, using the map name as an argument to fill each map with random entries. Use the map names `map-1` and `map-2`.
+
+[source, bash]
+----
+cd clients/go
+go run main.go fill <MAP-NAME>
+----
+
+You should see the following output.
+
+[source, shell]
+----
+Successful connection!
+Starting to fill the map (<MAP-NAME>) with random entries.
+Current map size: 2
+Current map size: 3
+Current map size: 4
+....
+....
+----
+--
+
+Python::
++
+--
+Start the application for each map, using the map name as an argument to fill each map with random entries. Use the map names `map-1` and `map-2`.
+
+[source, bash]
+----
+cd clients/python
+pip install -r requirements.txt
+python main.py fill <MAP-NAME>
+----
+
+You should see the following output.
+
+[source, shell]
+----
+Successful connection!
+Starting to fill the map (<MAP-NAME>) with random entries.
+Current map size: 2
+Current map size: 3
+Current map size: 4
+....
+....
+----
+--
+
+====
 
 == Step 3. Verify the Replication of Map Entries
 
@@ -308,6 +386,17 @@ In this step, you'll check the sizes of the maps on the second, target cluster t
 +
 [tabs]
 ====
+
+CLC::
++
+--
+Run the following command for adding the second cluster config to the CLC.
+
+[source, bash]
+----
+clc config add hz-2 cluster.name=dev cluster.address=<SECOND-CLUSTER-EXTERNAL-IP>
+----
+--
 
 Java::
 +
@@ -378,12 +467,20 @@ client = hazelcast.HazelcastClient(
 ----
 --
 ====
-. Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. If you're reusing the sample code from this tutorial, use the map names `map-1` and `map-2`.
-+
 
+. Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. Use the map names `map-1` and `map-2`.
 +
 [tabs]
 ====
+
+CLC::
++
+--
+[source, bash]
+----
+clc -c hz-2 map size --name <MAP-NAME>
+----
+--
 
 Java::
 +
@@ -393,6 +490,14 @@ Java::
 cd clients/java
 mvn package
 java -jar target/*jar-with-dependencies*.jar size <MAP-NAME>
+----
+
+You should see the following output:
+
+[source, shell]
+----
+Successful connection!
+Current map (<MAP-NAME>) size: 12
 ----
 --
 
@@ -405,6 +510,14 @@ cd clients/nodejs
 npm install
 npm start size <MAP-NAME>
 ----
+
+You should see the following output:
+
+[source, shell]
+----
+Successful connection!
+Current map (<MAP-NAME>) size: 12
+----
 --
 
 Go::
@@ -414,6 +527,14 @@ Go::
 ----
 cd clients/go
 go run main.go size <MAP-NAME>
+----
+
+You should see the following output:
+
+[source, shell]
+----
+Successful connection!
+Current map (<MAP-NAME>) size: 12
 ----
 --
 
@@ -426,17 +547,17 @@ cd clients/python
 pip install -r requirements.txt
 python main.py size <MAP-NAME>
 ----
---
 
-====
-+
 You should see the following output:
-+
+
 [source, shell]
 ----
 Successful connection!
 Current map (<MAP-NAME>) size: 12
 ----
+--
+
+====
 
 == Clean Up
 
