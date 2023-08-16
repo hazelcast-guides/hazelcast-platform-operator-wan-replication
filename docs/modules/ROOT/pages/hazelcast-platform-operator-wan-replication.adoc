@@ -28,6 +28,15 @@ Before starting this tutorial, make sure that you have the following:
 
 == Step 1. Start the Hazelcast Cluster
 
+. Clone the examples repository
++
+[source, shell]
+----
+git clone https://github.com/hazelcast-guides/hazelcast-platform-operator-wan-replication.git
+cd hazelcast-platform-operator-wan-replication
+----
+The sample code(excluding CLC) for this tutorial is in the `clients` directory.
+
 . Create a secret with your link:http://trialrequest.hazelcast.com/[Hazelcast Enterprise License].
 +
 [source, shell]
@@ -244,6 +253,22 @@ client = hazelcast.HazelcastClient(
 )
 ----
 --
+.NET::
++
+--
+[source, cs]
+----
+var options = new HazelcastOptionsBuilder()
+    .With(args)
+    .With((configuration, options) =>
+    {
+        options.Networking.UsePublicAddresses = true;
+        options.Networking.SmartRouting = false;
+        options.Networking.Addresses.Add("<FIRST-CLUSTER-EXTERNAL-IP>");
+    })
+    .Build();
+----
+--
 
 ====
 +
@@ -376,6 +401,33 @@ Current map size: 4
 ----
 --
 
+.NET::
++
+--
+Start the application for each map, using the map name as an argument to fill each map with random entries. Use the map names `map-1` and `map-2`.
+
+[source, bash]
+----
+cd clients/dotnet
+dotnet build
+dotnet run fill <MAP-NAME>
+----
+
+You should see the following output.
+
+[source, shell]
+----
+Successful connection!
+Starting to fill the map (<MAP-NAME>) with random entries.
+Current map size: 2
+Current map size: 3
+Current map size: 4
+....
+....
+----
+--
+
+
 ====
 
 == Step 3. Verify the Replication of Map Entries
@@ -466,6 +518,25 @@ client = hazelcast.HazelcastClient(
 )
 ----
 --
+.NET::
++
+--
+[source, cs]
+----
+var options = new HazelcastOptionsBuilder()
+    .With(args)
+    .With((configuration, options) =>
+    {
+        options.Networking.UsePublicAddresses = true;
+        options.Networking.SmartRouting = false;
+        options.Networking.Addresses.Add("<SECOND-CLUSTER-EXTERNAL-IP>");
+
+    })
+    .Build();
+----
+--
+
+
 ====
 
 . Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. Use the map names `map-1` and `map-2`.
@@ -556,6 +627,25 @@ Successful connection!
 Current map (<MAP-NAME>) size: 12
 ----
 --
+.NET::
++
+--
+[source, bash]
+----
+cd clients/dotnet
+dotnet build
+dotnet run size <MAP-NAME>
+----
+
+You should see the following output:
+
+[source, shell]
+----
+Successful connection!
+Current map (<MAP-NAME>) size: 12
+----
+--
+
 
 ====
 
