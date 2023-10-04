@@ -89,9 +89,9 @@ kubectl get hazelcast
 +
 [source,shell]
 ----
-NAME               STATUS    MEMBERS   EXTERNAL-ADDRESSES    WAN-ADDRESSES
-hazelcast-first    Running   3/3       35.193.112.105:5701   35.193.112.105:5710
-hazelcast-second   Running   3/3       34.29.242.190:5701    34.29.242.190:5710
+NAME               STATUS    MEMBERS
+hazelcast-first    Running   3/3
+hazelcast-second   Running   3/3
 ----
 
 . Find the addresses of the clusters.
@@ -99,17 +99,17 @@ hazelcast-second   Running   3/3       34.29.242.190:5701    34.29.242.190:5710
 +
 [source, shell]
 ----
-kubectl get service hazelcast-first hazelcast-second
+kubectl get hazelcastendpoint hazelcast-first hazelcast-second
 ----
 +
 [source,shell]
 ----
-NAME               TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)          AGE
-hazelcast-first    LoadBalancer   10.96.229.87   172.18.0.222   5701:30282/TCP,5702:31120/TCP,8081:30985/TCP,5710:30009/TCP   1m
-hazelcast-second   LoadBalancer   10.96.34.62    172.18.0.207   5701:31233/TCP,5702:31065/TCP,8081:30897/TCP,5710:31353/TCP   1m
+NAME               TYPE        ADDRESS
+hazelcast-first    Discovery   34.41.70.32:5701
+hazelcast-second   Discovery   35.223.229.199:5701
 ----
 +
-The field `EXTERNAL-IP` is the address of your Hazelcast cluster.
+The `ADDRESS` column displays the external addresses of the Hazelcast clusters.
 
 == Step 2. Create a WAN Replication Configuration
 
