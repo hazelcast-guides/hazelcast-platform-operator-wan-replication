@@ -99,14 +99,16 @@ hazelcast-second   Running   3/3
 +
 [source, shell]
 ----
-kubectl get hazelcastendpoint hazelcast-first hazelcast-second
+kubectl get hazelcastendpoint --selector="app.kubernetes.io/instance in (hazelcast-first, hazelcast-second)"
 ----
 +
 [source,shell]
 ----
-NAME               TYPE        ADDRESS
-hazelcast-first    Discovery   34.41.70.32:5701
-hazelcast-second   Discovery   35.223.229.199:5701
+NAME                   TYPE        ADDRESS
+hazelcast-first        Discovery   34.123.9.149:5701
+hazelcast-first-wan    WAN         34.123.9.149:5710
+hazelcast-second       Discovery   34.16.0.16:5701
+hazelcast-second-wan   WAN         34.16.0.16:5710
 ----
 +
 The `ADDRESS` column displays the external addresses of the Hazelcast clusters.
