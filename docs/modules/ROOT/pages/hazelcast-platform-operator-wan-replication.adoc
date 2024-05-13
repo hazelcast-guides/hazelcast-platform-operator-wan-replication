@@ -24,18 +24,9 @@ Before starting this tutorial, make sure that you have the following:
 
 * A running https://kubernetes.io/[Kubernetes] cluster
 * The Kubernetes command-line tool, https://kubernetes.io/docs/tasks/tools/#kubectl[kubectl]
-* A deployed xref:operator:ROOT:index.adoc[Hazelcast Platform Operator]
+* A deployed xref:operator:ROOT:get-started.adoc[Hazelcast Platform Operator]
 
 == Step 1. Start the Hazelcast Cluster
-
-. Clone the examples repository
-+
-[source, shell]
-----
-git clone https://github.com/hazelcast-guides/hazelcast-platform-operator-wan-replication.git
-cd hazelcast-platform-operator-wan-replication
-----
-The sample code(excluding CLC) for this tutorial is in the `clients` directory.
 
 . Create a secret with your link:http://trialrequest.hazelcast.com/[Hazelcast Enterprise License].
 +
@@ -49,16 +40,8 @@ kubectl create secret generic hazelcast-license-key --from-literal=license-key=<
 +
 [source, shell]
 ----
-cat <<EOF | kubectl apply -f -
-apiVersion: hazelcast.com/v1alpha1
-kind: Hazelcast
-metadata:
-  name: hazelcast-first
-spec:
-  licenseKeySecret: hazelcast-license-key
-  exposeExternally:
-    type: Unisocket
-    discoveryServiceType: LoadBalancer
+kubectl apply -f - <<EOF
+include::ROOT:example$/hazelcast-first.yaml[]
 EOF
 ----
 
@@ -66,16 +49,8 @@ EOF
 +
 [source, shell]
 ----
-cat <<EOF | kubectl apply -f -
-apiVersion: hazelcast.com/v1alpha1
-kind: Hazelcast
-metadata:
-  name: hazelcast-second
-spec:
-  licenseKeySecret: hazelcast-license-key
-  exposeExternally:
-    type: Unisocket
-    discoveryServiceType: LoadBalancer
+kubectl apply -f - <<EOF
+include::ROOT:example$/hazelcast-second.yaml[]
 EOF
 ----
 +
@@ -122,20 +97,8 @@ The `ADDRESS` column displays the external addresses of the Hazelcast clusters.
 +
 [source, shell]
 ----
-cat <<EOF | kubectl apply -f -
-apiVersion: hazelcast.com/v1alpha1
-kind: Map
-metadata:
-  name: map-1
-spec:
-  hazelcastResourceName: hazelcast-first
----
-apiVersion: hazelcast.com/v1alpha1
-kind: Map
-metadata:
-  name: map-2
-spec:
-  hazelcastResourceName: hazelcast-first
+kubectl apply -f - <<EOF
+include::ROOT:example$/map.yaml[]
 EOF
 ----
 
@@ -151,17 +114,8 @@ Run the following command to apply the configuration.
 +
 [source, shell]
 ----
-cat <<EOF | kubectl apply -f -
-apiVersion: hazelcast.com/v1alpha1
-kind: WanReplication
-metadata:
-  name: wan-replication
-spec:
-  resources:
-    - name: hazelcast-first
-      kind: Hazelcast
-  targetClusterName: dev
-  endpoints: "<SECOND-CLUSTER-EXTERNAL-IP>"
+kubectl apply -f - <<EOF
+include::ROOT:example$/wanreplication.yaml[]
 EOF
 ----
 
@@ -170,6 +124,17 @@ EOF
 In this step, you'll fill the maps on the first, source cluster.
 
 . Configure the Hazelcast client to connect to the first cluster, using its address. [[configure-client]]
++
+To access all sample clients, clone the following repository:
++
+[source, shell]
+----
+git clone https://github.com/hazelcast-guides/hazelcast-platform-operator-wan-replication.git
+cd hazelcast-platform-operator-wan-replication
+----
++
+The sample code(excluding CLC) for this tutorial is in the link:https://github.com/hazelcast-guides/hazelcast-platform-operator-wan-replication/tree/master/docs/modules/ROOT/examples[`docs/modules/ROOT/examples/`] directory.
+
 +
 [tabs]
 ====
@@ -192,8 +157,7 @@ Java::
 --
 [source, java]
 ----
-ClientConfig config = new ClientConfig();
-config.getNetworkConfig().addAddress("<FIRST-CLUSTER-EXTERNAL-IP>");
+include::ROOT:example$/java/src/main/java/com/hazelcast/Main.java[]
 ----
 --
 
@@ -202,16 +166,7 @@ NodeJS::
 --
 [source, javascript]
 ----
-const { Client } = require('hazelcast-client');
-
-const clientConfig = {
-    network: {
-        clusterMembers: [
-            '<FIRST-CLUSTER-EXTERNAL-IP>'
-        ]
-    }
-};
-const client = await Client.newHazelcastClient(clientConfig);
+include::ROOT:example$/nodejs/client.js[]
 ----
 --
 
@@ -220,22 +175,7 @@ Go::
 --
 [source, go]
 ----
-import (
-	"log"
-
-	"github.com/hazelcast/hazelcast-go-client"
-)
-
-func main() {
-	config := hazelcast.Config{}
-	cc := &config.Cluster
-	cc.Network.SetAddresses("<FIRST-CLUSTER-EXTERNAL-IP>")
-	ctx := context.TODO()
-	client, err := hazelcast.StartNewClientWithConfig(ctx, config)
-	if err != nil {
-		panic(err)
-	}
-}
+include::ROOT:example$/go/main.go[]
 ----
 --
 
@@ -244,15 +184,7 @@ Python::
 --
 [source, python]
 ----
-import logging
-import hazelcast
-
-logging.basicConfig(level=logging.INFO)
-
-client = hazelcast.HazelcastClient(
-    cluster_members=["<FIRST-CLUSTER-EXTERNAL-IP>"],
-    use_public_ip=True,
-)
+include::ROOT:example$/python/main.py[]
 ----
 --
 .NET::
@@ -260,15 +192,7 @@ client = hazelcast.HazelcastClient(
 --
 [source, cs]
 ----
-var options = new HazelcastOptionsBuilder()
-    .With(args)
-    .With((configuration, options) =>
-    {
-        options.Networking.UsePublicAddresses = true;
-        options.Networking.SmartRouting = false;
-        options.Networking.Addresses.Add("<FIRST-CLUSTER-EXTERNAL-IP>");
-    })
-    .Build();
+include::ROOT:example$/dotnet/Program.cs[]
 ----
 --
 
@@ -307,7 +231,7 @@ Start the application for each map, using the map name as an argument to fill ea
 
 [source, bash]
 ----
-cd clients/java
+cd java
 mvn package
 java -jar target/*jar-with-dependencies*.jar fill <MAP-NAME>
 ----
@@ -333,7 +257,7 @@ Start the application for each map, using the map name as an argument to fill ea
 
 [source, bash]
 ----
-cd clients/nodejs
+cd nodejs
 npm install
 npm start fill <MAP-NAME>
 ----
@@ -359,7 +283,7 @@ Start the application for each map, using the map name as an argument to fill ea
 
 [source, bash]
 ----
-cd clients/go
+cd go
 go run main.go fill <MAP-NAME>
 ----
 
@@ -384,7 +308,7 @@ Start the application for each map, using the map name as an argument to fill ea
 
 [source, bash]
 ----
-cd clients/python
+cd python
 pip install -r requirements.txt
 python main.py fill <MAP-NAME>
 ----
@@ -410,7 +334,7 @@ Start the application for each map, using the map name as an argument to fill ea
 
 [source, bash]
 ----
-cd clients/dotnet
+cd dotnet
 dotnet build
 dotnet run fill <MAP-NAME>
 ----
@@ -432,114 +356,11 @@ Current map size: 4
 
 ====
 
-== Step 3. Verify the Replication of Map Entries
+== Step 4. Verify the Replication of Map Entries
 
 In this step, you'll check the sizes of the maps on the second, target cluster to make sure that WAN replication events have been received.
 
 . Configure the Hazelcast client to connect to the second cluster, as you did in <<configure-client, Configure the Hazelcast Client>>.
-+
-[tabs]
-====
-
-CLC::
-+
---
-Run the following command for adding the second cluster config to the CLC.
-
-[source, bash]
-----
-clc config add hz-2 cluster.name=dev cluster.address=<SECOND-CLUSTER-EXTERNAL-IP>
-----
---
-
-Java::
-+
---
-[source, java]
-----
-ClientConfig config = new ClientConfig();
-config.getNetworkConfig().addAddress("<SECOND-CLUSTER-EXTERNAL-IP>");
-----
---
-
-NodeJS::
-+
---
-[source, javascript]
-----
-const { Client } = require('hazelcast-client');
-
-const clientConfig = {
-    network: {
-        clusterMembers: [
-            '<SECOND-CLUSTER-EXTERNAL-IP>'
-        ]
-    }
-};
-const client = await Client.newHazelcastClient(clientConfig);
-----
---
-
-Go::
-+
---
-[source, go]
-----
-import (
-	"log"
-
-	"github.com/hazelcast/hazelcast-go-client"
-)
-
-func main() {
-	config := hazelcast.Config{}
-	cc := &config.Cluster
-	cc.Network.SetAddresses("<SECOND-CLUSTER-EXTERNAL-IP>")
-	ctx := context.TODO()
-	client, err := hazelcast.StartNewClientWithConfig(ctx, config)
-	if err != nil {
-		panic(err)
-	}
-}
-----
---
-
-Python::
-+
---
-[source, python]
-----
-import logging
-import hazelcast
-
-logging.basicConfig(level=logging.INFO)
-
-client = hazelcast.HazelcastClient(
-    cluster_members=["<SECOND-CLUSTER-EXTERNAL-IP>"],
-    use_public_ip=True,
-)
-----
---
-.NET::
-+
---
-[source, cs]
-----
-var options = new HazelcastOptionsBuilder()
-    .With(args)
-    .With((configuration, options) =>
-    {
-        options.Networking.UsePublicAddresses = true;
-        options.Networking.SmartRouting = false;
-        options.Networking.Addresses.Add("<SECOND-CLUSTER-EXTERNAL-IP>");
-
-    })
-    .Build();
-----
---
-
-
-====
 
 . Start the application for each map, using the map name as an argument to check the map size, and to check that WAN replication was successful. Use the map names `map-1` and `map-2`.
 +
