@@ -2,7 +2,6 @@
 :page-layout: tutorial
 :page-product: operator
 :page-categories: Cloud Native
-:page-enterprise: true
 :page-est-time: 10 mins
 :page-lang: go, java, node, python
 :description: Learn how to keep data in sync across two Hazelcast clusters.

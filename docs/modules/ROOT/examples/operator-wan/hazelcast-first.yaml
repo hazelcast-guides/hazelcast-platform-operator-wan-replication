@@ -3,7 +3,7 @@ kind: Hazelcast
 metadata:
   name: hazelcast-first
 spec:
-  licenseKeySecret: hazelcast-license-key
+  licenseKeySecretName: hazelcast-license-key
   exposeExternally:
     type: Unisocket
     discoveryServiceType: LoadBalancer
